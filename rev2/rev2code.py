@@ -295,3 +295,19 @@ for i, sl in enumerate(all_node_vals_sorted):
     # if sl[3] in badusers or sl[3] in goodusers:  # dont store users for which we dont have ground truth
         fw.write("%s,%s,%s,%s\n" % (str(sl[0]), str(sl[1]), str(sl[2]), str(sl[3])))
 fw.close()
+
+
+user_count = 0
+product_count = 0
+for node in nodes:
+    if "u" in node[0]:
+        user_count+=1
+
+    if "p" in node[0]:
+        product_count+=1
+
+# we noticed that in the original alpha_network.pkl files, the nodes count are different than the alpha_network.csv files.
+# And we do not clear how the pkl file divide product nodes and user nodes.
+print "total nodes %d" % len(list(nodes))
+print "user nodes %d" % user_count
+print "product nodes %d" % product_count
