@@ -11,24 +11,45 @@ dataset = "alpha"
 
 
 def load_graph():
-    G = nx.read_gpickle("./results/%s_graph_embedding_vectors.pkl" % (dataset))
+    G = nx.read_gpickle(
+        "results/%s_graph_embedding_featured_graph.pkl" % (dataset))
 
     print "Total nodes=%d" % G.number_of_nodes()
     print "Total edges=%d" % G.number_of_edges()
 
     return G
 
+def distance(x, y):
+    return np.sqrt(np.sum(np.square(x - y)))
+    # x2 = np.sqrt(np.sum(np.square(x)))
+    # y2 = np.sqrt(np.sum(np.square(y)))
 
-def k_means_clustering(scores, k):
-    center_indices = np.random.choice(scores, k)
-    centers = scores[center_indices]
+    # if x2 == 0 or y2 == 0:
+    #     return 1
+
+    # return np.matmul(x, y)/ (x2 * y2)
+
+def find_closest_center(score, centers):
+    return min(
+        range(len(centers)), key=lambda i: distance(score, centers[i]))
+
+
+def k_means_clustering(score_map, k):
+    scores = list(score_map.values())
+    centers = random.sample(scores, k)
 
     while True:
         # 2a. Assign labels based on closest center
-        labels = pairwise_distances_argmin(scores, centers)
+        labels = {
+            node_id: find_closest_center(score, centers)
+            for node_id, score in score_map.items()
+        }
 
         # 2b. Find new centers from means of points
-        new_centers = np.array([scores[labels == i].mean(0) for i in range(k)])
+        new_centers = np.array([
+            np.array([score_map[j] for j in score_map
+                      if labels[j] == i]).mean(0) for i in range(k)
+        ])
 
         # 2c. Check for convergence
         if np.all(centers == new_centers):
@@ -40,9 +61,17 @@ def k_means_clustering(scores, k):
 
 def main():
     graph = load_graph()
-    scores = [node["features"] for node in graph.node.values()]
-    centers, labels = k_means_clustering(scores, 3)
-
+    score_map = {
+        node_id: node["features"]
+        for node_id, node in graph.node.items()
+    }
+    k = 3
+    centers, labels = k_means_clustering(score_map, k)
+    print centers
+    for i in range(k):
+        print "Cluster ", i, ": ", [
+            node_id for node_id in labels if labels[node_id] == i
+        ]
 
 if __name__ == "__main__":
     main()
