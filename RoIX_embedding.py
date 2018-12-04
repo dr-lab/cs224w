@@ -93,6 +93,8 @@ def findFeatures(G, node_id):
     else:
         (fairness_media_score,fairness_score) = rev2_fairness_score_map[node_id]
 
+
+
     features = [out_degree, in_degree, degree_diff, ego_net_edges_count, fairness_score, fairness_media_score]
     return features
 
