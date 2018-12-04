@@ -5,7 +5,6 @@ import random
 
 import networkx as nx
 import numpy as np
-from sklearn.metrics import pairwise_distances_argmin
 
 dataset = "alpha"
 
