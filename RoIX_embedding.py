@@ -41,7 +41,7 @@ def getRev2FairnessScore():
     :return: a map of {node_id, (fairness media, fairness score)}
     """
     node_to_fairness_map = {}
-    f = open("./rev2/results/alpha-fng-sorted-users-0-0-0-0-0-0-0.csv".format(dataset), "r")
+    f = open("./rev2/results/{}-fng-sorted-users-0-0-0-0-0-0-0.csv".format(dataset), "r")
     for l in f:
         ls = l.strip().split(",")
         # print ls[0][1:] , ls[0]
