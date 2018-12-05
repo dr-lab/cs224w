@@ -61,7 +61,29 @@ As side product, also dump the who graph (with embedding features) in a pickle f
 
 
 
+**k-means.py**
 
+One class to cluster nodes by k-means
+
+
+**ground_truth_analysis.py**
+
+1. Analysis the groun truth network file, "./rev2/data/%s_gt.csv"
+1. Parse the file and save good user list and bad user list to two pickle file
+    1. "./results/%s_gt_good_users_set.pkl"
+    1. "./results/%s_gt_bad_users_set.pkl"
+
+**networkx_utils.py**
+
+Some function to draw diagram by networkx or pyplot
+
+**draw_diagrams.py**
+
+Classes where all the diagrams are drawn there.
+
+**environment.yml**
+
+Used by conda, setup the python dev environment
 
 DataSet
 -------

@@ -47,10 +47,12 @@ def drawNxGraphNodeGroups(NxG, good_users, bad_users, other_users, title, fileNa
 
 def drawNxGrap(NxG, title, fileName):
     pos = nx.spring_layout(NxG)
+    nx.draw_networkx(NxG, pos)
 
-    nx.draw_networkx_nodes(NxG, pos, node_size=3)
-    nx.draw_networkx_labels(NxG, pos, font_size=6)
-    nx.draw_networkx_edges(NxG, pos, alpha=0.2)
+
+    # nx.draw_networkx_nodes(NxG, pos, node_size=3)
+    # nx.draw_networkx_labels(NxG, pos, font_size=6)
+    # nx.draw_networkx_edges(NxG, pos, alpha=0.2)
     plt.figure(3, figsize=(12, 12))
     plt.title(title)
     plt.savefig(fileName)
