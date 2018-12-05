@@ -9,6 +9,8 @@ Created on Tue Dec  4 22:15:13 2018
 import pandas as pd
 import sklearn.tree
 from sklearn.model_selection import train_test_split
+import subprocess
+import graphviz
 network = "alpha"
 
 #nodeid is column 0
@@ -34,3 +36,7 @@ dt.fit(X_train, y_train)
 dt.score(X_test,y_test)
 
 dt.decision_path(X_test)
+
+export_graphviz(dt,out_file='dt.dot')
+command = ["dot", "-Tpng", "dt.dot", "-o", "dt.png"]
+subprocess.check_call(command)
