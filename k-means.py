@@ -11,7 +11,7 @@ dataset = "alpha"
 
 def load_graph():
     G = nx.read_gpickle(
-        "results/%s_graph_embedding_featured_graph.pkl" % (dataset))
+        "results/%s_graph_embedding_vectors.pkl" % (dataset))
 
     print "Total nodes=%d" % G.number_of_nodes()
     print "Total edges=%d" % G.number_of_edges()
