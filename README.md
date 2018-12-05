@@ -16,8 +16,9 @@ CS224 Project Plan Outline
         1. Traditional RoFex Embedding
            1.  Edge number, incoming #
             1. Edge number outcoming #
-            1. Edge different: incoming - outcoming
-            1. egnoNet edges  : total edges between members of the egonet
+            1. ~~Edge different: incoming - outcoming~~
+            1. egoNet edges  : total edges between members of the egonet
+            1. edges between egoNet
         1. Rev2 features
             1. Rev2 fairness Score
             1. Rev2 fairness median score
@@ -51,6 +52,8 @@ Files
 
 As side product, also dump the who graph (with embedding features) in a pickle file
 "./results/%s_graph_embedding_featured_graph.pkl"
+
+We compare and remove some related features.
 
 **cosin_similarity.py**
 
@@ -93,9 +96,9 @@ https://cs.stanford.edu/~srijan/rev2/
 
 Note: alpha_network.pkl and alpha_network.csv have different nodes and edges. (not sure why)
 
-Rev2 load the pkl file to laod the graph, and in the final fairness dump file, it only contains the user nodes and some user nodes are missing. (3786 vs. 3286)
+Rev2 load the pkl file to load the graph, and in the final fairness dump file, it only contains the user nodes and some user nodes are missing. (3786 vs. 3286)
 
-Our alternative solution is to read the original alpha_network.csv file,filter out all the ndoes which has no fairness nodes.
+Our alternative solution is to read the original alpha_network.csv file,filter out all the nodes which has no fairness score.
 
 And the ground truth file only contains around 200 labels, which only can be used for cross and spot checking. Not enough data for NN training.
 

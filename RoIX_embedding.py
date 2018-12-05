@@ -18,7 +18,6 @@ def loadGraph():
     filePath = "./rev2/data/{0}_network.csv".format(dataset)
     print "Load network from {0}".format(filePath)
 
-
     f = open(filePath, "r")
     for l in f:
         ls = l.strip().split(",")
@@ -33,6 +32,31 @@ def loadGraph():
     print "Total edges=%d" % G.number_of_edges()
 
     return G
+
+
+def getMaxInOutEdges(G):
+    nodes = G.nodes()
+    max_in = 1
+    max_out = 1
+    max_ego = 1
+    max_ego_out = 1
+    for node_id in nodes:
+        max_in = max(max_in, G.degree(node_id))
+        max_out = max(max_out, G.out_degree(node_id))
+
+        ego_net = nx.ego_graph(G, node_id)
+        ego_edges = ego_net.number_of_edges()
+        max_ego = max(max_ego,ego_edges)
+
+        nbrs = nx.neighbors(G, node_id)
+        nbrs_total_edges = 0
+        for nbr in nbrs:
+            nbrs_total_edges += G.out_degree(nbr)
+            nbrs_total_edges += G.degree(nbr)
+
+            max_ego_out = max(max_ego_out, nbrs_total_edges - ego_edges)
+
+    return max_in, max_out, max_ego, max_ego_out
 
 
 def getRev2FairnessScore():
@@ -63,7 +87,16 @@ def getEgoNetEdges(G, node_id):
     :return: count of edge number
     """
     ego_net = nx.ego_graph(G, node_id)
-    return ego_net.number_of_edges()
+    ego_edges = ego_net.number_of_edges()
+
+    nbrs = nx.neighbors(G, node_id)
+    nbrs_total_edges = 0
+    for nbr in nbrs:
+        nbrs_total_edges += G.out_degree(nbr)
+        nbrs_total_edges += G.degree(nbr)
+
+    ego_out_going_edges = nbrs_total_edges - ego_edges
+    return ego_edges / max_ego, ego_out_going_edges / max_ego_out
 
 
 def findFeatures(G, node_id):
@@ -76,26 +109,21 @@ def findFeatures(G, node_id):
     # basic network features
 
     # 1. out degree
-    out_degree = G.out_degree(node_id)
+    out_degree = G.out_degree(node_id) / max_out
 
     # 2. in degree
-    in_degree = G.degree(node_id)
+    in_degree = G.degree(node_id) / max_in
 
-    # 3. degree different (in - out)
-    degree_diff = in_degree - out_degree
-
-    # 4. ego net edge count
-    ego_net_edges_count = getEgoNetEdges(G, node_id)
+    # 3,4. ego net edge count, ego_out_going_edges
+    ego_net_edges_count, ego_out_going_edges = getEgoNetEdges(G, node_id)
 
     # 5,6. Rev2 features (fairness media score, fairness)
     if node_id not in rev2_fairness_score_map:
-        (fairness_media_score, fairness_score) = (1.0,1.0)
+        (fairness_media_score, fairness_score) = (1.0, 1.0)
     else:
-        (fairness_media_score,fairness_score) = rev2_fairness_score_map[node_id]
+        (fairness_media_score, fairness_score) = rev2_fairness_score_map[node_id]
 
-
-
-    features = [out_degree, in_degree, degree_diff, ego_net_edges_count, fairness_score, fairness_media_score]
+    features = [out_degree, in_degree, ego_net_edges_count, ego_out_going_edges, fairness_score, fairness_media_score]
     return features
 
 
@@ -109,7 +137,7 @@ def initFeatures(G):
     for node_id in nodes:
         features = findFeatures(G, node_id)
         # delete node which is marked as Product
-        if features[4]==1 and features[5]==1:
+        if features[4] == 1:
             G.remove_node(node_id)
         else:
             # print features
@@ -154,7 +182,7 @@ def recursive(G, k):
 # main code start here
 
 G = loadGraph()
-
+max_in, max_out, max_ego, max_ego_out = getMaxInOutEdges(G)
 # drawNxGraph(getEgoNet(G, node_id), "Ego_Net_sockpuppet_{0}_{1}".format(dataset, node_id))
 
 initFeatures(G)
@@ -167,7 +195,7 @@ fw = open("./results/%s_graph_embedding_vectors.csv" % (dataset), "w")
 for node in list(G.nodes(data="features")):
     node_id = node[0]
     features = node[1]["features"]
-    fw.write("%s,%s\n" % (node_id,",".join(str(e) for e in features)))
+    fw.write("%s,%s\n" % (node_id, ",".join(str(e) for e in features)))
 fw.close()
 
 nx.write_gpickle(G, "./results/%s_graph_embedding_featured_graph.pkl" % (dataset))
@@ -175,4 +203,3 @@ nx.write_gpickle(G, "./results/%s_graph_embedding_featured_graph.pkl" % (dataset
 print "\nUsers only"
 print "Total nodes=%d" % G.number_of_nodes()
 print "Total edges=%d" % G.number_of_edges()
-
