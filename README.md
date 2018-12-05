@@ -39,6 +39,30 @@ CS224 Project Plan Outline
 1. Puppet Master
     1. Bad users with same role, bad users’ direct neighbors,, or within same community should form a “puppet army”. Write some analysis about these users about their similarities, like rating burst, rating behavior, abnormal network structure.
 
+
+Files
+-----
+
+**RoIX_embedding.py**
+
+1. We first initialize each node with 6 features, 4 are network structure related, other two are from the Rev2 fairness.
+1. Then we do 3 iteration, expand to totally 54 features for each node,
+1. Finally dump the features in a csv file, ./results/%s_graph_embedding_vectors.csv.
+
+As side product, also dump the who graph (with embedding features) in a pickle file
+"./results/%s_graph_embedding_featured_graph.pkl"
+
+**cosin_similarity.py**
+
+1. Load the embedding csv file, for one (manually pick one bad user id) user, calcualte the cosine similarity score with each of other nodes, sort the score from high to low.
+1. Then write the results in a csv file, "./results/%s_%d_similarity_vectors.csv"
+1. Pick top K and last K nodes, compare with the ground truth, calculate the intersection
+
+
+
+
+
+
 DataSet
 -------
 

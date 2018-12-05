@@ -175,3 +175,4 @@ nx.write_gpickle(G, "./results/%s_graph_embedding_featured_graph.pkl" % (dataset
 print "\nUsers only"
 print "Total nodes=%d" % G.number_of_nodes()
 print "Total edges=%d" % G.number_of_edges()
+
