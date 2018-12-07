@@ -5,13 +5,15 @@ import random
 
 import networkx as nx
 import numpy as np
+import cPickle
+import ground_truth_analysis as gt
 
 dataset = "alpha"
 
 
 def load_graph():
     G = nx.read_gpickle(
-        "results/%s_graph_embedding_vectors.pkl" % (dataset))
+        "results/%s_graph_embedding_featured_graph.pkl" % (dataset))
 
     print "Total nodes=%d" % G.number_of_nodes()
     print "Total edges=%d" % G.number_of_edges()
@@ -67,6 +69,25 @@ def main():
     k = 3
     centers, labels = k_means_clustering(score_map, k)
     print centers
+
+    gt_bad_users = cPickle.load(
+        open("./results/%s_gt_bad_users_set.pkl" % dataset, "rb"))
+
+    c1 = []
+    c2 = []
+    c0 = []
+    for node_id in labels:
+        if labels[node_id] == 0:
+            c0.append(node_id)
+        if labels[node_id] == 1:
+            c1.append(node_id)
+        if labels[node_id] == 2:
+            c2.append(node_id)
+
+    gt.intersectUsers(c0, gt_bad_users)
+    gt.intersectUsers(c1, gt_bad_users)
+    gt.intersectUsers(c2, gt_bad_users)
+
     for i in range(k):
         print "Cluster ", i, ": ", [
             node_id for node_id in labels if labels[node_id] == i

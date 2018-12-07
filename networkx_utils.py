@@ -47,8 +47,8 @@ def drawNxGraphNodeGroups(NxG, good_users, bad_users, other_users, title, fileNa
 
 def drawNxGrap(NxG, title, fileName):
     pos = nx.spring_layout(NxG)
-    nx.draw_networkx(NxG, pos)
-
+    nx.draw_networkx_nodes(NxG, pos)
+    nx.draw_networkx_edges(NxG, pos)
 
     # nx.draw_networkx_nodes(NxG, pos, node_size=3)
     # nx.draw_networkx_labels(NxG, pos, font_size=6)

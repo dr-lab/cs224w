@@ -49,11 +49,11 @@ def dumpTopKSimNodes(feature_sim_node_score_map, base_node_id, topK, mode):
     for i in range(0, len_score):
         reverse_sorted[i]
         if i < topK:
-            print "top k score #: %d \t %s \t%s" % (i, reverse_sorted[i].score, reverse_sorted[i].name)
+            # print "top k score #: %d \t %s \t%s" % (i, reverse_sorted[i].score, reverse_sorted[i].name)
             topKSet.append(reverse_sorted[i].score)
 
         if i > len_score - topK:
-            print "last k score #: %d \t %s \t%s" % (i, reverse_sorted[i].score, reverse_sorted[i].name)
+            # print "last k score #: %d \t %s \t%s" % (i, reverse_sorted[i].score, reverse_sorted[i].name)
             lastKSet.append(reverse_sorted[i].score)
 
         fw.write("%s,%s\n" % (reverse_sorted[i].score, reverse_sorted[i].name))
@@ -96,5 +96,5 @@ for mode in ['cosine', 'l2']:
 
     # def histogram(values, bins, xlabel, ylabel, title, fileName)
     utils.hist(sim_score_values_map.values(), 30, 'Sim-Score', 'Frequency',
-               'Similarity Score Histogram k=3,bad userId= %d' % bad_user_id,
+               '%s Similarity Score Histogram k=3,bad userId= %d' % (mode, bad_user_id),
                "./diagram/%s_sim_score_histogram_%d.PNG" % (mode, bad_user_id))
