@@ -10,6 +10,15 @@ CS224 Project Plan Outline
 
     This will give a relative fairness score per user (lowest score means most likely to be bad actor, highest fairness score most likely to be good user)
 
+    Based on Rev2 paper, bellow parameters can get best performance,
+        alpha1 = 0
+        alpha2 = 0
+        beta1 = 0
+        beta2 = 0
+        gamma1 = 0.01
+        gamma2 = 0.01
+        gamma3 = 0
+
 1. Run ReFex (HW 2 question 2) to try and improve the fairness score from Rev2 algorithm
 
     1. Try different attributes in the ReFex node embedding vector (total 5 features)

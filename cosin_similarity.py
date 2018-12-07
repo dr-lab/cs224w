@@ -73,7 +73,7 @@ def calSimAndPrint(G, base_node_id):
 
 
 G = loadGraph()
-bad_user_id = 7602
+bad_user_id = 1
 sim_score_values_map = calSimAndPrint(G, bad_user_id)
 
 topKSet, lastKSet = dumpTopKSimNodes(sim_score_values_map, bad_user_id, 200)
