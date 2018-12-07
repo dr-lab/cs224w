@@ -8,9 +8,7 @@ import numpy as np
 import cPickle
 import ground_truth_analysis as gt
 
-
 dataset = "alpha"
-
 
 def load_graph():
     G = nx.read_gpickle(
