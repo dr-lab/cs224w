@@ -5,29 +5,29 @@
 import os
 import sys
 
-# NETWORKNAME = sys.argv[1]
+NETWORKNAME = sys.argv[1]
 
-# alpha1 = int(sys.argv[2])
-# alpha2 = int(sys.argv[3])
+alpha1 = int(sys.argv[2])
+alpha2 = int(sys.argv[3])
+
+beta1 = int(sys.argv[4])
+beta2 = int(sys.argv[5])
+
+gamma1 = int(sys.argv[6])
+gamma2 = int(sys.argv[7])
+gamma3 = int(sys.argv[8])
+
+# NETWORKNAME = "alpha"
 #
-# beta1 = int(sys.argv[4])
-# beta2 = int(sys.argv[5])
+# alpha1 = 0
+# alpha2 = 0
 #
-# gamma1 = int(sys.argv[6])
-# gamma2 = int(sys.argv[7])
-# gamma3 = int(sys.argv[8])
-
-NETWORKNAME = "alpha"
-
-alpha1 = 0
-alpha2 = 0
-
-beta1 = 0
-beta2 = 0
-
-gamma1 = 0.01
-gamma2 = 0.01
-gamma3 = 0
+# beta1 = 0
+# beta2 = 0
+#
+# gamma1 = 0.01
+# gamma2 = 0.01
+# gamma3 = 0
 
 if gamma1 == 0 and gamma2 == 0 and gamma3 == 0:
     sys.exit(0)

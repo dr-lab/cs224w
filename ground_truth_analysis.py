@@ -41,7 +41,11 @@ def analysisGT():
 def intersectUsers(my_bad_users, gt_bad_users):
     # print my_bad_users
     # print gt_bad_users
-    print (set(my_bad_users) & set(gt_bad_users))
+    intersected = set(my_bad_users) & set(gt_bad_users)
+
+    # print len(intersected)
+    # print (intersected)
+    return intersected
 
 
 analysisGT()
