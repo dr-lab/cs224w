@@ -5,29 +5,29 @@
 import os
 import sys
 
-NETWORKNAME = sys.argv[1]
-
-alpha1 = int(sys.argv[2])
-alpha2 = int(sys.argv[3])
-
-beta1 = int(sys.argv[4])
-beta2 = int(sys.argv[5])
-
-gamma1 = int(sys.argv[6])
-gamma2 = int(sys.argv[7])
-gamma3 = int(sys.argv[8])
-
-# NETWORKNAME = "alpha"
+#NETWORKNAME = sys.argv[1]
 #
-# alpha1 = 0
-# alpha2 = 0
+#alpha1 = int(sys.argv[2])
+#alpha2 = int(sys.argv[3])
 #
-# beta1 = 0
-# beta2 = 0
+#beta1 = int(sys.argv[4])
+#beta2 = int(sys.argv[5])
 #
-# gamma1 = 0.01
-# gamma2 = 0.01
-# gamma3 = 0
+#gamma1 = int(sys.argv[6])
+#gamma2 = int(sys.argv[7])
+#gamma3 = int(sys.argv[8])
+
+NETWORKNAME = "alpha"
+
+alpha1 = 0
+alpha2 = 0
+
+beta1 = 0
+beta2 = 0
+ 
+gamma1 = 0.01
+gamma2 = 0.01
+gamma3 = 0
 
 if gamma1 == 0 and gamma2 == 0 and gamma3 == 0:
     sys.exit(0)
@@ -311,3 +311,32 @@ for node in nodes:
 print "total nodes %d" % len(list(nodes))
 print "user nodes %d" % user_count
 print "product nodes %d" % product_count
+
+### added code to write out the goodness ratings
+
+currentgvals = []
+for node in nodes:
+    if "p" not in node[0]:  
+        continue
+    currentgvals.append(G.node[node]["goodness"])
+median_gvals = numpy.median(currentgvals)
+print len(currentgvals), median_gvals
+
+
+all_node_vals_good = []
+for node in nodes:
+    if "p" not in node[0]:
+        continue
+    f = G.node[node]["goodness"]
+    all_node_vals_good.append([node, (f - median_gvals) * numpy.log(G.in_degree(node) + 1), f, G.in_degree(node)])
+    
+  # sort users based on their scores
+all_node_vals_good_sorted = sorted(all_node_vals_good, key=lambda x: (float(x[1]), float(x[2]), -1 * float(x[3])))[::-1]  
+
+fw = open("./results/%s-good-sorted-users-%d-%d-%d-%d-%d-%d-%d.csv" % (
+NETWORKNAME, alpha1, alpha2, beta1, beta2, gamma1, gamma2, gamma3), "w")
+
+for i, sl in enumerate(all_node_vals_good_sorted):
+    # if sl[3] in badusers or sl[3] in goodusers:  # dont store users for which we dont have ground truth
+        fw.write("%s,%s,%s,%s\n" % (str(sl[0]), str(sl[1]), str(sl[2]), str(sl[3])))
+fw.close()
