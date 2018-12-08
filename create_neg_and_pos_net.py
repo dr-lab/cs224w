@@ -23,10 +23,13 @@ def getPosNegNet(dataset):
     Gneg = nx.read_gpickle("./rev2/data/%s_network.pkl" % (dataset))
 
     for e in G.edges_iter(data='weight', default=1):
+        #print e
         if e[2] >= 0:
             Gneg.remove_edge(e[0],e[1])
+            #print "pos"
         if e[2] < 0:
             Gpos.remove_edge(e[0],e[1])  
+            #print "neg"
     # Error  checking
     for e in Gpos.edges_iter(data='weight', default=1):
         if e[2]<0:
@@ -35,6 +38,13 @@ def getPosNegNet(dataset):
     for e in Gneg.edges_iter(data='weight', default=1):
         if e[2]>0:
             raise ValueError('neg net has pos weight')
+    for n in G.nodes_iter():
+        if not Gpos.has_node(n):
+            Gpos.add_node(n)
+        if not Gneg.has_node(n):
+            Gneg.add_node(n)    
+    if Gneg.number_of_nodes() != Gpos.number_of_nodes() and Gneg.number_of_nodes() != G.number_of_nodes():
+        raise ValueError('network missing nodes')
     return Gpos, Gneg
 
 Gpos,Gneg = getPosNegNet(network)
