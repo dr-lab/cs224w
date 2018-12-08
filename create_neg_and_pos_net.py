@@ -8,6 +8,7 @@ csv files
 
 import pandas as pd
 import networkx as nx
+import numpy as np
 network = "alpha"
 
 net = pd.read_csv("./rev2/data/%s_network.csv"%(network),header=None)
@@ -17,10 +18,21 @@ net_pos = net[net[2] >= 0]
 net_pos.to_csv("%s_pos_network.csv"%(network),header=False)
 net_neg.to_csv("%s_neg_network.csv"%(network),header=False)
 
+
+def getNodeIdList(dataset):
+    df = pd.read_csv("./rev2/data/alpha_network.csv")
+    df.columns = ['src','dst','weight','delta']
+    node_ids = set(np.append(df['src'].unique(),df['dst'].unique()))
+    return node_ids
+
+
+
 def getPosNegNet(dataset):
-    G = nx.read_gpickle("./rev2/data/%s_network.pkl" % (dataset))
-    Gpos = nx.read_gpickle("./rev2/data/%s_network.pkl" % (dataset))
-    Gneg = nx.read_gpickle("./rev2/data/%s_network.pkl" % (dataset))
+    df = pd.read_csv("./rev2/data/%s_network.csv" % (dataset)) 
+    df.columns = ['src','dst','weight','delta']
+    G = nx.from_pandas_dataframe(df, 'src', 'dst', create_using=nx.Graph() )
+    Gpos = nx.from_pandas_dataframe(df, 'src', 'dst', create_using=nx.Graph() )
+    Gneg = nx.from_pandas_dataframe(df, 'src', 'dst', create_using=nx.Graph() )
 
     for e in G.edges_iter(data='weight', default=1):
         #print e
@@ -38,7 +50,9 @@ def getPosNegNet(dataset):
     for e in Gneg.edges_iter(data='weight', default=1):
         if e[2]>0:
             raise ValueError('neg net has pos weight')
-    for n in G.nodes_iter():
+    
+    n_ids = getNodeIdList(dataset)
+    for n in n_ids:
         if not Gpos.has_node(n):
             Gpos.add_node(n)
         if not Gneg.has_node(n):
@@ -47,6 +61,6 @@ def getPosNegNet(dataset):
         raise ValueError('network missing nodes')
     return G, Gpos, Gneg
 
-Gpos,Gneg = getPosNegNet(network)
+Gpos,Gneg,G = getPosNegNet(network)
 
-
+getNodeIdList(network)
