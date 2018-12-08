@@ -288,7 +288,7 @@ import operator
 all_node_vals_sorted = sorted(all_node_vals, key=lambda x: (float(x[1]), float(x[2]), -1 * float(x[3])))[::-1]
 
 
-fw = open("./results/%s-fng-sorted-users-%d-%d-%d-%d-%d-%d-%d.csv" % (
+fw = open("./results/fairness/%s-fng-sorted-users-%d-%d-%d-%d-%d-%d-%d.csv" % (
 NETWORKNAME, alpha1, alpha2, beta1, beta2, gamma1, gamma2, gamma3), "w")
 
 for i, sl in enumerate(all_node_vals_sorted):
@@ -333,7 +333,7 @@ for node in nodes:
   # sort users based on their scores
 all_node_vals_good_sorted = sorted(all_node_vals_good, key=lambda x: (float(x[1]), float(x[2]), -1 * float(x[3])))[::-1]  
 
-fw = open("./results/%s-good-sorted-users-%d-%d-%d-%d-%d-%d-%d.csv" % (
+fw = open("./results/goodness/%s-good-sorted-users-%d-%d-%d-%d-%d-%d-%d.csv" % (
 NETWORKNAME, alpha1, alpha2, beta1, beta2, gamma1, gamma2, gamma3), "w")
 
 for i, sl in enumerate(all_node_vals_good_sorted):
