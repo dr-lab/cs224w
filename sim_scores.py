@@ -22,6 +22,8 @@ def loadGraph():
 
 def cosineSim(x, y):
     sum = np.matmul(x, y)
+
+
     x2 = np.sqrt(np.sum(np.square(x)))
     y2 = np.sqrt(np.sum(np.square(y)))
 

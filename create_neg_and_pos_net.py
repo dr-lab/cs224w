@@ -30,9 +30,9 @@ def getNodeIdList(dataset):
 def getPosNegNet(dataset):
     df = pd.read_csv("./rev2/data/%s_network.csv" % (dataset)) 
     df.columns = ['src','dst','weight','delta']
-    G = nx.from_pandas_dataframe(df, 'src', 'dst', create_using=nx.Graph() )
-    Gpos = nx.from_pandas_dataframe(df, 'src', 'dst', create_using=nx.Graph() )
-    Gneg = nx.from_pandas_dataframe(df, 'src', 'dst', create_using=nx.Graph() )
+    G = nx.from_pandas_dataframe(df, 'src', 'dst', create_using=nx.DiGraph() )
+    Gpos = nx.from_pandas_dataframe(df, 'src', 'dst', create_using=nx.DiGraph() )
+    Gneg = nx.from_pandas_dataframe(df, 'src', 'dst', create_using=nx.DiGraph() )
 
     for e in G.edges_iter(data='weight', default=1):
         #print e

@@ -4,36 +4,9 @@ import networkx as nx
 import numpy as np
 import cPickle
 import os, sys
-
+import create_neg_and_pos_net as negpos
 
 dataset = "alpha"
-
-
-def loadGraph():
-    G = nx.DiGraph()
-
-    # CSV file format
-    # SOURCE, TARGET, RATING, TIME
-    # 7188,1,10,1407470400
-    # 430,1,10,1376539200
-
-    filePath = "./rev2/data/{0}_network.csv".format(dataset)
-    print "Load network from {0}".format(filePath)
-
-    f = open(filePath, "r")
-    for l in f:
-        ls = l.strip().split(",")
-        G.add_edge(int(ls[0]), int(ls[1]), rating=int(ls[2]),
-                   time=float(ls[3]))  ## the weight should already be in the range of -1 to 1
-    f.close()
-
-    # G  = cPickle.load(open("./rev2/data/%s_network.pkl" % (dataset), "rb"))
-
-    print "Products + users"
-    print "Total nodes=%d" % G.number_of_nodes()
-    print "Total edges=%d" % G.number_of_edges()
-
-    return G
 
 
 def getMaxInOutEdges(G):
@@ -61,37 +34,48 @@ def getMaxInOutEdges(G):
     return max_in, max_out, max_ego, max_ego_out
 
 
-def getRev2FairnessScore():
+def loadRev2Score(folder, node_to_score_map):
+    files = os.listdir(folder)
+    file_count = len(files)
+    for file in files:
+        if dataset not in file:
+            file_count = file_count - 1
+            continue
+        f = open(folder + file, "r")
+        print file
+        for l in f:
+            ls = l.strip().split(",")
+
+            node_id = int(ls[0][1:])
+            # node_id = ls[0]
+            if node_id in node_to_score_map:
+                node_to_score_map[node_id].append(float(ls[1]))
+            else:
+                node_to_score_map[node_id] = [float(ls[1])]
+        f.close()
+
+    return node_to_score_map, file_count
+
+
+def getRev2FairnessScore(G):
     """
     load the rev2 output, get the fairness scores
     :return: a map of {node_id, (fairness media, fairness score)}
     """
     node_to_fairness_map = {}
-    files = os.listdir("./rev2/results/")
-    file_count = len(files)
-    for file in files:
-        if dataset not in file:
-            file_count = file_count -1
-            continue
-        f = open("./rev2/results/" + file, "r")
-        print file
-        for l in f:
-            ls = l.strip().split(",")
-            # print ls[0][1:] , ls[0]
-            node_id = int(ls[0][1:])
-            # node_id = ls[0]
-            if node_id in node_to_fairness_map:
-                node_to_fairness_map[node_id].append(float(ls[1]))
-            else:
-                node_to_fairness_map[node_id] = [float(ls[1])]
-        f.close()
-    return (node_to_fairness_map, file_count)
+    node_to_goodness_map = {}
+    nodes = G.nodes()
+    for node_id in nodes:
+        node_to_fairness_map[node_id] = [0]
+        node_to_goodness_map[node_id] = [0]
+
+    node_to_fairness_map, fairness_file_count = loadRev2Score("./rev2/results/fairness/", node_to_fairness_map)
+    node_to_goodness_map, goodness_file_count = loadRev2Score("./rev2/results/goodness/", node_to_goodness_map)
+
+    return (node_to_fairness_map, node_to_goodness_map, fairness_file_count, goodness_file_count)
 
 
-rev2_fairness_score_map, file_count = getRev2FairnessScore()
-
-
-def getEgoNetEdges(G, node_id):
+def getEgoNetEdges(G, node_id, max_ego_out, max_ego):
     """
     Get EgoNet edge number
     :param G:
@@ -118,7 +102,7 @@ def removeProductNodes(G):
             G.remove_node(node_id)
 
 
-def findFeatures(G, node_id):
+def findFeatures(G, node_id, max_in, max_out, max_ego, max_ego_out):
     """
     Get 6 features for each node
     :param G:
@@ -134,7 +118,7 @@ def findFeatures(G, node_id):
     in_degree = G.degree(node_id) / max_in
 
     # 3,4. ego net edge count, ego_out_going_edges
-    ego_net_edges_count, ego_out_going_edges = getEgoNetEdges(G, node_id)
+    ego_net_edges_count, ego_out_going_edges = getEgoNetEdges(G, node_id, max_ego, max_ego_out)
 
     # 5,6. Rev2 features (fairness media score, fairness)
     # if node_id not in rev2_fairness_score_map:
@@ -143,23 +127,67 @@ def findFeatures(G, node_id):
     #     (fairness_media_score, fairness_score) = rev2_fairness_score_map[node_id]
 
     features = [out_degree, in_degree, ego_net_edges_count, ego_out_going_edges]
-    features.extend(rev2_fairness_score_map[node_id])
+
     return features
 
 
-def initFeatures(G):
+def initFeatures(G, G_pos, G_neg):
     """
     Initialize featues for each node
     :param G:
     :return:
     """
 
-    removeProductNodes(G)
+    # removeProductNodes(G)
+    # removeProductNodes(G_pos)
+    # removeProductNodes(G_neg)
+
+    max_in, max_out, max_ego, max_ego_out = getMaxInOutEdges(G)
+    max_in_pos, max_out_pos, max_ego_pos, max_ego_out_pos = getMaxInOutEdges(G_pos)
+    max_in_neg, max_out_neg, max_ego_neg, max_ego_out_neg = getMaxInOutEdges(G_neg)
 
     nodes = G.nodes()
     for node_id in nodes:
-        features = findFeatures(G, node_id)
+        features = findFeatures(G, node_id, max_in, max_out, max_ego, max_ego_out)
+        features_pos = findFeatures(G_pos, node_id, max_in_pos, max_out_pos, max_ego_pos, max_ego_out_pos)
+        features_neg = findFeatures(G_neg, node_id, max_in_neg, max_out_neg, max_ego_neg, max_ego_out_neg)
+
+        features_rev2_faireness = rev2_fairness_score_map[node_id]
+        features_rev2_goodness = node_to_goodness_score_map[node_id]
         G.node[node_id]["features"] = features
+        features_pos.extend(features_neg)
+        G.node[node_id]["features_pos_neg"] = features_pos
+
+        if features_pos is None:
+            print("stop here")
+        features_pos.extend(features_rev2_faireness)
+        features_pos.extend(features_rev2_goodness)
+        G.node[node_id]["features_pos_neg_rev2"] = features_pos
+
+
+def augmentFeatures(G, node_id, k, features, feature_count, feature_key):
+    # find its neighbors
+    nbr_ids = G.adj[node_id]
+
+    sum_features = np.zeros(feature_count * 3 ** (k - 1))
+    degree = G.out_degree(node_id)
+    for nbr_id in nbr_ids:
+        nbr_features = G.node[nbr_id][feature_key]
+        if nbr_features is None:
+            print("stop here")
+
+        sum_features = np.add(sum_features, nbr_features[0:feature_count * 3 ** (k - 1)])
+
+    # append sum and mean only if the target nodes features length <=3*k
+    new_features = features
+    if degree == 0:
+        new_features = np.append(features, np.zeros(feature_count * 3 ** (k - 1) * 2))
+    else:
+        new_features = np.append(new_features, np.divide(sum_features, degree * 1.0))
+        new_features = np.append(new_features, sum_features)
+
+    return new_features
+    # G.node[node_id][feature_key] = new_features
 
 
 def recursive(G, k):
@@ -173,49 +201,64 @@ def recursive(G, k):
     for node_id in nodes:
         # print G.node[node_id]["features"]
         features = G.node[node_id]["features"]
+        features_pos_neg = G.node[node_id]["features_pos_neg"]
+        features_pos_neg_rev2 = G.node[node_id]["features_pos_neg_rev2"]
 
-        feature_count = file_count + 4
-        if len(features) > feature_count * 3 ** (k - 1):
+        G_feature_count = 4
+        G_neg_pos_count = 8
+        G_neg_pos_rev2_count = fairness_file_count + goodness_file_count + 8
+
+        if len(features) > G_feature_count * 3 ** (k - 1):
             return
 
-        # find its neighbors
-        nbr_ids = G.adj[node_id]
-
-        sum_features = np.zeros(feature_count * 3 ** (k - 1))
-        degree = G.out_degree(node_id)
-        for nbr_id in nbr_ids:
-            nbr_features = G.node[nbr_id]["features"]
-            sum_features = np.add(sum_features, nbr_features[0:feature_count * 3 ** (k - 1)])
-
-        # append sum and mean only if the target nodes features length <=3*k
-        new_features = features
-        if degree == 0:
-            new_features = np.append(features, np.zeros(feature_count * 3 ** (k - 1) * 2))
-        else:
-            new_features = np.append(new_features, np.divide(sum_features, degree * 1.0))
-            new_features = np.append(new_features, sum_features)
+        new_features = augmentFeatures(G, node_id, k, features, G_feature_count, "features")
+        new_features_pos_neg = augmentFeatures(G, node_id, k, features_pos_neg, G_neg_pos_count, "features_pos_neg")
+        new_features_pos_neg_rev2 = augmentFeatures(G, node_id, k, features_pos_neg_rev2, G_neg_pos_rev2_count,
+                                                    "features_pos_neg_rev2")
 
         G.node[node_id]["features"] = new_features
+        G.node[node_id]["features_pos_neg"] = new_features_pos_neg
+        G.node[node_id]["features_pos_neg_rev2"] = new_features_pos_neg_rev2
+
+
+def writeCsvEmbedding(feature_label):
+    fw = open("./results/%s_graph_embedding_vectors_%s.csv" % (dataset, feature_label), "w")
+
+    v_len = 0
+    count = 0
+    for node in list(G.nodes(data=feature_label)):
+        node_id = node[0]
+        features = node[1][feature_label]
+
+        if v_len != len(features):
+            count+=1
+            if count >=2:
+                print("stop here")
+
+
+        fw.write("%s,%s\n" % (node_id, ",".join(str(e) for e in features)))
+    fw.close()
 
 
 # main code start here
 
-G = loadGraph()
-max_in, max_out, max_ego, max_ego_out = getMaxInOutEdges(G)
+G, G_pos, G_neg = negpos.getPosNegNet(dataset)
+rev2_fairness_score_map, node_to_goodness_score_map, fairness_file_count, goodness_file_count = getRev2FairnessScore(G)
+
+print "Total G nodes=%d" % G.number_of_nodes()
+print "Total G_pos nodes=%d" % G_pos.number_of_nodes()
+print "Total G_neg nodes=%d" % G_neg.number_of_nodes()
+
 # drawNxGraph(getEgoNet(G, node_id), "Ego_Net_sockpuppet_{0}_{1}".format(dataset, node_id))
 
-initFeatures(G)
+initFeatures(G, G_pos, G_neg)
 recursive(G, 1)
-# recursive(G, 2)
-# recursive(G, 3)
+recursive(G, 2)
+recursive(G, 3)
 
-fw = open("./results/%s_graph_embedding_vectors.csv" % (dataset), "w")
-
-for node in list(G.nodes(data="features")):
-    node_id = node[0]
-    features = node[1]["features"]
-    fw.write("%s,%s\n" % (node_id, ",".join(str(e) for e in features)))
-fw.close()
+writeCsvEmbedding("features")
+writeCsvEmbedding("features_pos_neg")
+writeCsvEmbedding("features_pos_neg_rev2")
 
 nx.write_gpickle(G, "./results/%s_graph_embedding_featured_graph.pkl" % (dataset))
 
