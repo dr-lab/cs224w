@@ -45,7 +45,7 @@ def getPosNegNet(dataset):
             Gneg.add_node(n)    
     if Gneg.number_of_nodes() != Gpos.number_of_nodes() and Gneg.number_of_nodes() != G.number_of_nodes():
         raise ValueError('network missing nodes')
-    return Gpos, Gneg
+    return G, Gpos, Gneg
 
 Gpos,Gneg = getPosNegNet(network)
 
