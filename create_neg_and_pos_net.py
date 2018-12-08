@@ -18,9 +18,9 @@ net_pos.to_csv("%s_pos_network.csv"%(network),header=False)
 net_neg.to_csv("%s_neg_network.csv"%(network),header=False)
 
 def getPosNegNet(dataset):
-    G = nx.read_gpickle("results/%s_graph_embedding_featured_graph.pkl" % (dataset))
-    Gpos = nx.read_gpickle("results/%s_graph_embedding_featured_graph.pkl" % (dataset))
-    Gneg = nx.read_gpickle("results/%s_graph_embedding_featured_graph.pkl" % (dataset))
+    G = nx.read_gpickle("./rev2/data/%s_network.pkl" % (dataset))
+    Gpos = nx.read_gpickle("./rev2/data/%s_network.pkl" % (dataset))
+    Gneg = nx.read_gpickle("./rev2/data/%s_network.pkl" % (dataset))
 
     for e in G.edges_iter(data='weight', default=1):
         if e[2] >= 0:
