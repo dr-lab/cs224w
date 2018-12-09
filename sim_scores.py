@@ -22,6 +22,8 @@ def loadGraph():
 
 def cosineSim(x, y):
     sum = np.matmul(x, y)
+
+
     x2 = np.sqrt(np.sum(np.square(x)))
     y2 = np.sqrt(np.sum(np.square(y)))
 
@@ -62,14 +64,15 @@ def dumpTopKSimNodes(feature_sim_node_score_map, base_node_id, topK, mode):
     return topKSet, lastKSet
 
 
-def calSimAndPrint(G, base_node_id, mode):
+def calSimAndPrint(G, base_node_id, mode,feature_set):
     Feature_Sim_Node_Score_Map = {}
-    base_features = G.node[base_node_id]["features"]
+    #base node is the anchor node
+    base_features = G.node[base_node_id][feature_set]
 
     nodes = G.nodes()
     for node_id in nodes:
         if node_id != base_node_id:
-            features_y = G.node[node_id]["features"]
+            features_y = G.node[node_id][feature_set]
             if mode == 'cosine':
                 score = cosineSim(base_features, features_y)
             elif mode == 'l2':
@@ -87,38 +90,41 @@ G = loadGraph()
 gt_bad_users = cPickle.load(
     open("./results/%s_gt_bad_users_set.pkl" % dataset, "rb"))
 
-fw = open("./results/%s_gt_bad_users_intersect.csv" % (dataset), "w")
-fw.write("bad_user_id, l2_topk, l2_lastk, cosine_topk, cosine_lastk, total_bad_user_count\n")
-
-for bad_user_id in gt_bad_users:
-    l2_topk = 0
-    cosine_topk = 0
-    l2_lastk = 0
-    cosine_lastk = 0
-
-    if G.has_node(bad_user_id):
-        for mode in ['cosine', 'l2']:
-            sim_score_values_map = calSimAndPrint(G, bad_user_id, mode)
-            topKSet, lastKSet = dumpTopKSimNodes(sim_score_values_map, bad_user_id, 200, mode)
-
-            # print "topK bad users"
-            topKIntersect = gt.intersectUsers(topKSet, gt_bad_users)
-
-
-            # print "topK good users"
-            lastKIntersect = gt.intersectUsers(lastKSet, gt_bad_users)
-
-            if mode=="l2":
-                l2_topk = len(topKIntersect)
-                l2_lastk = len(lastKIntersect)
-            else:
-                cosine_topk = len(topKIntersect)
-                cosine_lastk = len(lastKIntersect)
-
-            # def histogram(values, bins, xlabel, ylabel, title, fileName)
-            # utils.hist(sim_score_values_map.values(), 30, 'Sim-Score', 'Frequency',
-            #            '%s Similarity Score Histogram k=3,bad userId= %d' % (mode, bad_user_id),
-            #            "./diagram/%s_sim_score_histogram_%d.PNG" % (mode, bad_user_id))
-        print "%d\t  %d \t %d \t %d \t %d \t %d" % (bad_user_id, l2_topk, l2_lastk, cosine_topk, cosine_lastk, len(gt_bad_users))
-        fw.write("%d,%d,%d,%d,%d,%d\n" % (bad_user_id, l2_topk, l2_lastk, cosine_topk, cosine_lastk, len(gt_bad_users)))
+features = ["features","features_pos_neg","features_pos_neg_rev2"]
+for feature in features:
+    
+    fw = open("./results/%s_%s_gt_bad_users_intersect.csv" % (feature,dataset), "w")
+    fw.write("bad_user_id, l2_topk, l2_lastk, cosine_topk, cosine_lastk, total_bad_user_count\n")
+    
+    for bad_user_id in gt_bad_users:
+        l2_topk = 0
+        cosine_topk = 0
+        l2_lastk = 0
+        cosine_lastk = 0
+    
+        if G.has_node(bad_user_id):
+            for mode in ['cosine', 'l2']:
+                sim_score_values_map = calSimAndPrint(G, bad_user_id, mode,feature)
+                topKSet, lastKSet = dumpTopKSimNodes(sim_score_values_map, bad_user_id, 200, mode)
+    
+                # print "topK bad users"
+                topKIntersect = gt.intersectUsers(topKSet, gt_bad_users)
+    
+    
+                # print "topK good users"
+                lastKIntersect = gt.intersectUsers(lastKSet, gt_bad_users)
+    
+                if mode=="l2":
+                    l2_topk = len(topKIntersect)
+                    l2_lastk = len(lastKIntersect)
+                else:
+                    cosine_topk = len(topKIntersect)
+                    cosine_lastk = len(lastKIntersect)
+    
+                # def histogram(values, bins, xlabel, ylabel, title, fileName)
+                # utils.hist(sim_score_values_map.values(), 30, 'Sim-Score', 'Frequency',
+                #            '%s Similarity Score Histogram k=3,bad userId= %d' % (mode, bad_user_id),
+                #            "./diagram/%s_sim_score_histogram_%d.PNG" % (mode, bad_user_id))
+            print "%d\t  %d \t %d \t %d \t %d \t %d" % (bad_user_id, l2_topk, l2_lastk, cosine_topk, cosine_lastk, len(gt_bad_users))
+            fw.write("%d,%d,%d,%d,%d,%d\n" % (bad_user_id, l2_topk, l2_lastk, cosine_topk, cosine_lastk, len(gt_bad_users)))
 fw.close()
