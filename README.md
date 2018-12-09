@@ -8,7 +8,7 @@ CS224 Project Plan Outline
 
 1. Run the Rev2 code to get a fairness score per user
 
-    This will give a relative fairness score per user (lowest score means most likely to be bad actor, highest fairness score most likely to be good user)
+    This will give a relative fairness and goodness score per user (lowest score means most likely to be bad actor, highest fairness score most likely to be good user)
 
     Based on Rev2 paper, bellow parameters can get best performance,
         alpha1 = 0
@@ -18,6 +18,8 @@ CS224 Project Plan Outline
         gamma1 = 0.01
         gamma2 = 0.01
         gamma3 = 0
+
+        Note: We tried 100 and 1500 parameter combination, and feed to the embedding, we cannot see obvious enhancement.
 
 1. Run ReFex (HW 2 question 2) to try and improve the fairness score from Rev2 algorithm
 
@@ -30,13 +32,14 @@ CS224 Project Plan Outline
             1. edges between egoNet
         1. Rev2 features
             1. Rev2 fairness Score
-            1. Rev2 fairness median score
+            1. Rev2 goodness score
         1. If we have time: Min, median, max, std of delta t for ratings transactions or ratings values (if have time, to include total transaction #, is this equaling to incoming + outcoming edges?)
         1. In the first iteration, we concatenate the mean,sum, std of all u's neighbors' feature vectors to ~ Vu, and do the same for sum
 
 1. Use the vector embeddings from step 2 to create models that will label user good vs bad actor. Do this improve the accuracy of the Rev2 algorithm? (compare with ground truth, to measure the accuracy of the results from combination of Rev2+RoFex)
     1. Cosine similarity, L2 norm (find similar bad user, and compare with Rev and ground truth)
         1. Using ground truth, do the bad actors have vector embeddings that are more similar
+        1. For l2 and cosine, fine the topK and lastK node count; for each, find the GT good user, bad user and unlabelled
     1. K-means (community)
     1. Do good vs bad users cluster?
     1. Neural Net, decision tree (classification)
