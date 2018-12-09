@@ -180,7 +180,7 @@ features = ["features", "features_pos_neg", "features_pos_neg_rev2"]
 
 
 
-
+"""gr
 def generateIntersect(filePath, feature, k, iterrate_users, gt_good_users, gt_bad_users):
     fw = open(filePath, "w")
     fw.write(
@@ -201,8 +201,7 @@ def generateIntersect(filePath, feature, k, iterrate_users, gt_good_users, gt_ba
             for mode in ['cosine', 'l2']:
                 sim_score_values_map = calSimAndPrint(G, bad_user_id, mode, feature)
                 topKSet, lastKSet = dumpTopKSimNodes(sim_score_values_map, bad_user_id, k, mode)
-                
-                
+"""                
                 
 #code to get percisions               
 
@@ -282,9 +281,46 @@ def getAvgPrecisionScore(feature_set,mode,num_anchors):
         precision_scores = np.append(precision_scores,precision)
     return np.mean(precision_scores)
 
+def getAvgAucScore(feature_set,mode,num_anchors):
+    #anchors = gt_bad_users[0:10]
+    #feature_set = features[2]            
+    #mode = modes[0]
+    """Feature_Sim_Node_Score_Map = getScores(G, anchors,mode, feature_set, gt_good_users, gt_bad_users )
+    gt_scores = np.zeros((0,2))
+    for nid in Feature_Sim_Node_Score_Map.keys():
+        if nid in gt_good_users:
+            gt_scores = np.vstack((gt_scores,[Feature_Sim_Node_Score_Map[nid],1]))
+        elif nid in gt_bad_users:
+            gt_scores = np.vstack((gt_scores,[Feature_Sim_Node_Score_Map[nid],0]))
+        else:
+            print "boken got unided node here"
+    """
+    G = loadGraph()
+    
+    #feature_set = features[2]            
+    #mode = modes[0]
+    precision_scores = np.zeros((0,1))
+    for i in range(10):
+        print "i %d" % i
+        anchors = np.random.choice(gt_bad_users,10)#gt_bad_users[10*i:10*i+num_anchors]#np.random.choice(gt_bad_users,10)
+        Feature_Sim_Node_Score_Map = getScores(G, anchors,mode, feature_set, gt_good_users, gt_bad_users )
+        gt_scores = np.zeros((0,2))
+        for nid in Feature_Sim_Node_Score_Map.keys():
+            if nid in gt_good_users:
+                gt_scores = np.vstack((gt_scores,[Feature_Sim_Node_Score_Map[nid],1]))
+            elif nid in gt_bad_users:
+                gt_scores = np.vstack((gt_scores,[Feature_Sim_Node_Score_Map[nid],0]))
+            else:
+                print "boken got un-ided node here"
+        #name_score_tuple = collections.namedtuple('sortor', 'name score')
+        #reverse_sorted = sorted([name_score_tuple(v, k) for (k, v) in Feature_Sim_Node_Score_Map.items()], reverse=True)
+    
+        precision = sklearn.metrics.roc_auc_score( gt_scores[:,1],  gt_scores[:,0])
+        precision_scores = np.append(precision_scores,precision)
+    return np.mean(precision_scores)
 
 def getAllAvgPrecisionScore():
-    anchors = np.linspace(10,50,5)
+    anchors = np.linspace(10,90,5)
     features = ["features", "features_pos_neg", "features_pos_neg_rev2"]
     modes = ['cosine', 'l2']
     
@@ -300,9 +336,34 @@ def getAllAvgPrecisionScore():
           ncol=3, fancybox=True, shadow=True)
     plt.xlabel("Number of Anchor Nodes")
     plt.ylabel("Average Precision") 
-    plt.show()
+    #plt.show()
+    plt.savefig("./results/sim_score_results.png", bbox_inches = "tight")
 
 getAllAvgPrecisionScore()
+
+
+
+def getAllAvgAucScore():
+    anchors = np.linspace(10,50,5)
+    features = ["features", "features_pos_neg", "features_pos_neg_rev2"]
+    modes = ['cosine', 'l2']
+    
+    for mode in modes:
+        for feature in features:
+            ps =  np.zeros((0,1))
+            for num_anchors in anchors:
+                l = "%s, %s " % (mode,feature)   
+                p = getAvgAucScore(feature,mode,num_anchors)
+                ps = np.append(ps,p)
+            plt.plot(anchors,ps, label = l)
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.25),
+          ncol=3, fancybox=True, shadow=True)
+    plt.xlabel("Number of Anchor Nodes")
+    plt.ylabel("Average AUC") 
+    plt.show()
+
+#getAllAvgAucScore()
+
 
 """gt_scores_good = gt_scores[np.where(gt_scores[:,1] > 0),:]
 gt_scores_bad =  gt_scores[np.where(gt_scores[:,1] == 0),:]
