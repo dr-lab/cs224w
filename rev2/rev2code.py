@@ -275,17 +275,22 @@ median_fvals = numpy.median(currentfvals)
 print len(currentfvals), median_fvals
 
 all_node_vals = []
+fair_node_vals = []
+
 for node in nodes:
     if "u" not in node[0]:
         continue
     f = G.node[node]["fairness"]
     all_node_vals.append([node, (f - median_fvals) * numpy.log(G.out_degree(node) + 1), f, G.out_degree(node)])
+    fair_node_vals.append([node[1:], (f - median_fvals) * numpy.log(G.out_degree(node) + 1)])
+
 # all_node_vals = numpy.array(goodness_vals)
 
 import operator
 
 # sort users based on their scores
 all_node_vals_sorted = sorted(all_node_vals, key=lambda x: (float(x[1]), float(x[2]), -1 * float(x[3])))[::-1]
+fair_node_vals_sorted = sorted(fair_node_vals, key=lambda x: (float(x[1])))[::-1]
 
 
 fw = open("./results/fairness/%s-fng-sorted-users-%d-%d-%d-%d-%d-%d-%d.csv" % (
@@ -295,6 +300,16 @@ for i, sl in enumerate(all_node_vals_sorted):
     # if sl[3] in badusers or sl[3] in goodusers:  # dont store users for which we dont have ground truth
         fw.write("%s,%s,%s,%s\n" % (str(sl[0]), str(sl[1]), str(sl[2]), str(sl[3])))
 fw.close()
+
+
+fw = open("./results/fairness/%s-only_fairnes-sorted-users-%d-%d-%d-%d-%d-%d-%d.csv" % (
+NETWORKNAME, alpha1, alpha2, beta1, beta2, gamma1, gamma2, gamma3), "w")
+
+for i, sl in enumerate(fair_node_vals_sorted):
+    # if sl[3] in badusers or sl[3] in goodusers:  # dont store users for which we dont have ground truth
+        fw.write("%s,%s\n" % (str(sl[0]), str(sl[1])))
+fw.close()
+
 
 
 user_count = 0
@@ -340,3 +355,8 @@ for i, sl in enumerate(all_node_vals_good_sorted):
     # if sl[3] in badusers or sl[3] in goodusers:  # dont store users for which we dont have ground truth
         fw.write("%s,%s,%s,%s\n" % (str(sl[0]), str(sl[1]), str(sl[2]), str(sl[3])))
 fw.close()
+
+
+
+
+
