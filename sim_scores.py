@@ -95,11 +95,6 @@ def generateIntersect(filePath, feature, k, iterrate_users, gt_good_users, gt_ba
         " \n")
 
     for bad_user_id in iterrate_users:
-        l2_topk = 0
-        cosine_topk = 0
-        l2_lastk = 0
-        cosine_lastk = 0
-
         if G.has_node(bad_user_id):
             for mode in ['cosine', 'l2']:
                 sim_score_values_map = calSimAndPrint(G, bad_user_id, mode, feature)
@@ -127,47 +122,38 @@ def generateIntersect(filePath, feature, k, iterrate_users, gt_good_users, gt_ba
                 # utils.hist(sim_score_values_map.values(), 30, 'Sim-Score', 'Frequency',
                 #            '%s Similarity Score Histogram k=3,bad userId= %d' % (mode, bad_user_id),
                 #            "./diagram/%s_sim_score_histogram_%d.PNG" % (mode, bad_user_id))
-            print "%d\t  %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d" % (bad_user_id,
-                                                                   l2_topk_bad,
-                                                                   l2_topk_good,
-                                                                   (
-                                                                           k - l2_topk_bad - l2_topk_good),
-                                                                   # unlabelled l2_topk
-                                                                   l2_lastk_bad,
-                                                                   l2_lastk_good,
-                                                                   (
-                                                                           k - l2_lastk_bad - l2_lastk_good),
-                                                                   # unlabelled l2_lastk
-                                                                   cosine_topk_bad,
-                                                                   cosine_topk_good,
-                                                                   (
-                                                                           k - cosine_topk_bad - cosine_topk_good),
-
-                                                                   cosine_lastk_bad,
-                                                                   cosine_lastk_good,
-                                                                   (
-                                                                           k - cosine_lastk_bad - cosine_lastk_good)
-                                                                                                  )
-            fw.write("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n" % (bad_user_id,
-                                                                   l2_topk_bad,
-                                                                   l2_topk_good,
-                                                                   (
-                                                                           k - l2_topk_bad - l2_topk_good),
-                                                                   # unlabelled l2_topk
-                                                                   l2_lastk_bad,
-                                                                   l2_lastk_good,
-                                                                   (
-                                                                           k - l2_lastk_bad - l2_lastk_good),
-                                                                   # unlabelled l2_lastk
-                                                                   cosine_topk_bad,
-                                                                   cosine_topk_good,
-                                                                   (
-                                                                           k - cosine_topk_bad - cosine_topk_good),
-
-                                                                   cosine_lastk_bad,
-                                                                   cosine_lastk_good,
-                                                                   (
-                                                                           k - cosine_lastk_bad - cosine_lastk_good)))
+            print "%d\t  %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d" % (
+                bad_user_id,
+                l2_topk_bad,
+                l2_topk_good,
+                (k - l2_topk_bad - l2_topk_good),
+                # unlabelled l2_topk
+                l2_lastk_bad,
+                l2_lastk_good,
+                (k - l2_lastk_bad - l2_lastk_good),
+                # unlabelled l2_lastk
+                cosine_topk_bad,
+                cosine_topk_good,
+                (k - cosine_topk_bad - cosine_topk_good),
+                cosine_lastk_bad,
+                cosine_lastk_good,
+                (k - cosine_lastk_bad - cosine_lastk_good))
+            fw.write("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n" % (
+                bad_user_id,
+                l2_topk_bad,
+                l2_topk_good,
+                (k - l2_topk_bad - l2_topk_good),
+                # unlabelled l2_topk
+                l2_lastk_bad,
+                l2_lastk_good,
+                (k - l2_lastk_bad - l2_lastk_good),
+                # unlabelled l2_lastk
+                cosine_topk_bad,
+                cosine_topk_good,
+                (k - cosine_topk_bad - cosine_topk_good),
+                cosine_lastk_bad,
+                cosine_lastk_good,
+                (k - cosine_lastk_bad - cosine_lastk_good)))
     fw.close()
 
 
