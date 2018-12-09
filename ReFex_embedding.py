@@ -4,6 +4,7 @@ import networkx as nx
 import numpy as np
 import cPickle
 import os, sys
+import copy as copy
 import create_neg_and_pos_net as negpos
 
 dataset = "alpha"
@@ -48,10 +49,11 @@ def loadRev2Score(folder, node_to_score_map):
 
             node_id = int(ls[0][1:])
             # node_id = ls[0]
-            if node_id in node_to_score_map:
-                node_to_score_map[node_id].append(float(ls[1]))
-            else:
-                node_to_score_map[node_id] = [float(ls[1])]
+            node_to_score_map[node_id] = float(ls[1])
+            # if node_id in node_to_score_map:
+            #     node_to_score_map[node_id].append(float(ls[1]))
+            # else:
+            #     node_to_score_map[node_id] = [0]
         f.close()
 
     return node_to_score_map, file_count
@@ -66,8 +68,8 @@ def getRev2FairnessScore(G):
     node_to_goodness_map = {}
     nodes = G.nodes()
     for node_id in nodes:
-        node_to_fairness_map[node_id] = [0]
-        node_to_goodness_map[node_id] = [0]
+        node_to_fairness_map[node_id] = 0.0
+        node_to_goodness_map[node_id] = 0.0
 
     node_to_fairness_map, fairness_file_count = loadRev2Score("./rev2/results/fairness/", node_to_fairness_map)
     node_to_goodness_map, goodness_file_count = loadRev2Score("./rev2/results/goodness/", node_to_goodness_map)
@@ -152,42 +154,79 @@ def initFeatures(G, G_pos, G_neg):
         features_pos = findFeatures(G_pos, node_id, max_in_pos, max_out_pos, max_ego_pos, max_ego_out_pos)
         features_neg = findFeatures(G_neg, node_id, max_in_neg, max_out_neg, max_ego_neg, max_ego_out_neg)
 
+        print "features: ",len(features), features
+        print  "features_neg: ",len(features_neg), features_neg
+        print  "features_pos: ",len(features_pos), features_pos
+
+
         features_rev2_faireness = rev2_fairness_score_map[node_id]
         features_rev2_goodness = node_to_goodness_score_map[node_id]
         G.node[node_id]["features"] = features
-        features_pos.extend(features_neg)
-        G.node[node_id]["features_pos_neg"] = features_pos
+        # features_pos.extend(features_neg)
+        G.node[node_id]["features_pos_neg"] = copy.copy(features_pos)
+        G.node[node_id]["features_pos_neg"].extend(copy.copy(features_neg))
 
         if features_pos is None:
             print("stop here")
-        features_pos.extend(features_rev2_faireness)
-        features_pos.extend(features_rev2_goodness)
-        G.node[node_id]["features_pos_neg_rev2"] = features_pos
+
+        # print (features_rev2_faireness, features_rev2_goodness)
+        # features_pos.append(features_rev2_faireness)
+        # features_pos.append(features_rev2_goodness)
+
+        print (len(features_pos),features_rev2_faireness, features_rev2_goodness)
+
+        print ("add features to rev2 ")
+        G.node[node_id]["features_pos_neg_rev2"]= features_pos
+        print len(G.node[node_id]["features_pos_neg_rev2"]),G.node[node_id]["features_pos_neg_rev2"]
+
+        G.node[node_id]["features_pos_neg_rev2"].extend(features_neg)
+        print len(G.node[node_id]["features_pos_neg_rev2"]),G.node[node_id]["features_pos_neg_rev2"]
+
+        G.node[node_id]["features_pos_neg_rev2"].append(features_rev2_faireness)
+        print len(G.node[node_id]["features_pos_neg_rev2"]),G.node[node_id]["features_pos_neg_rev2"]
+
+        G.node[node_id]["features_pos_neg_rev2"].append(features_rev2_goodness)
+        print len(G.node[node_id]["features_pos_neg_rev2"]),G.node[node_id]["features_pos_neg_rev2"]
+
+        print "features: ", len(features), features
+        print  "features_neg: ",len(features_neg), features_neg
+        print  "features_pos: ",len(features_pos), features_pos
+
+        print "features: ", len(G.node[node_id]["features"]), G.node[node_id]["features"]
+        print len(G.node[node_id]["features_pos_neg"]),G.node[node_id]["features_pos_neg"]
+        print len(G.node[node_id]["features_pos_neg_rev2"]),G.node[node_id]["features_pos_neg_rev2"]
 
 
 def augmentFeatures(G, node_id, k, features, feature_count, feature_key):
     # find its neighbors
+    # print (node_id, feature_key, k-1, feature_count)
     nbr_ids = G.adj[node_id]
+
+    if len(features) > feature_count * 3 ** (k - 1):
+        return
 
     sum_features = np.zeros(feature_count * 3 ** (k - 1))
     degree = G.out_degree(node_id)
     for nbr_id in nbr_ids:
         nbr_features = G.node[nbr_id][feature_key]
-        if nbr_features is None:
-            print("stop here")
 
+        if len(sum_features) != len(nbr_features[0:feature_count * 3 ** (k - 1)]):
+            print feature_key, feature_count, k, features
+            print sum_features
+            print nbr_features[0:feature_count * 3 ** (k - 1)]
         sum_features = np.add(sum_features, nbr_features[0:feature_count * 3 ** (k - 1)])
+        # sum_features = np.add(sum_features, nbr_features)
 
     # append sum and mean only if the target nodes features length <=3*k
     new_features = features
     if degree == 0:
-        new_features = np.append(features, np.zeros(feature_count * 3 ** (k - 1) * 2))
+        new_features = np.append(features, np.zeros(feature_count * 3 ** (k - 1)*2))
     else:
         new_features = np.append(new_features, np.divide(sum_features, degree * 1.0))
         new_features = np.append(new_features, sum_features)
 
-    return new_features
-    # G.node[node_id][feature_key] = new_features
+    # return new_features
+    G.node[node_id][feature_key] = new_features
 
 
 def recursive(G, k):
@@ -206,37 +245,28 @@ def recursive(G, k):
 
         G_feature_count = 4
         G_neg_pos_count = 8
-        G_neg_pos_rev2_count = fairness_file_count + goodness_file_count + 8
+        G_neg_pos_rev2_count = 2 + 8
 
-        if len(features) > G_feature_count * 3 ** (k - 1):
-            return
 
-        new_features = augmentFeatures(G, node_id, k, features, G_feature_count, "features")
-        new_features_pos_neg = augmentFeatures(G, node_id, k, features_pos_neg, G_neg_pos_count, "features_pos_neg")
-        new_features_pos_neg_rev2 = augmentFeatures(G, node_id, k, features_pos_neg_rev2, G_neg_pos_rev2_count,
+
+        augmentFeatures(G, node_id, k, features, G_feature_count, "features")
+        augmentFeatures(G, node_id, k, features_pos_neg, G_neg_pos_count, "features_pos_neg")
+        augmentFeatures(G, node_id, k, features_pos_neg_rev2, G_neg_pos_rev2_count,
                                                     "features_pos_neg_rev2")
 
-        G.node[node_id]["features"] = new_features
-        G.node[node_id]["features_pos_neg"] = new_features_pos_neg
-        G.node[node_id]["features_pos_neg_rev2"] = new_features_pos_neg_rev2
+        # G.node[node_id]["features"] = new_features
+        # G.node[node_id]["features_pos_neg"] = new_features_pos_neg
+        # G.node[node_id]["features_pos_neg_rev2"] = new_features_pos_neg_rev2
 
 
 def writeCsvEmbedding(feature_label):
     fw = open("./results/%s_graph_embedding_vectors_%s.csv" % (dataset, feature_label), "w")
 
-    v_len = 0
-    count = 0
     for node in list(G.nodes(data=feature_label)):
         node_id = node[0]
         features = node[1][feature_label]
 
-        if v_len != len(features):
-            count+=1
-            if count >=2:
-                print("stop here")
-
-
-        fw.write("%s,%s\n" % (node_id, ",".join(str(e) for e in features)))
+        fw.write("%d,%s,%s\n" % (len(features), node_id, ",".join(str(e) for e in features)))
     fw.close()
 
 
