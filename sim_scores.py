@@ -87,8 +87,12 @@ def calSimAndPrint(G, base_node_id, mode, feature_set):
 def generateIntersect(filePath, feature, k, iterrate_users, gt_good_users, gt_bad_users):
     fw = open(filePath, "w")
     fw.write(
-        "bad_user_id, l2_topk_bad, l2_lastk_bad, cosine_topk_bad, cosine_lastk_bad, unlabelled_l2_topk, unlabelled_l2_lastk, l2_topk_good, l2_lastk_good, cosine_topk_good, cosine_lastk_good,"
-        "unlabelled_cosine_topk, unlabelled_cosine_lastk\n")
+        "bad_user_id, "
+        "l2_topk_bad, l2_topk_good, unlabelled_l2_topk,"
+        "l2_lastk_bad, l2_lastk_good, unlabelled_l2_lastk,"
+        "cosine_topk_bad, cosine_topk_good, unlabelled_cosine_topk,"
+        "cosine_lastk_bad, cosine_lastk_good,unlabelled_cosine_lastk"
+        " \n")
 
     for bad_user_id in iterrate_users:
         l2_topk = 0
@@ -124,50 +128,46 @@ def generateIntersect(filePath, feature, k, iterrate_users, gt_good_users, gt_ba
                 #            '%s Similarity Score Histogram k=3,bad userId= %d' % (mode, bad_user_id),
                 #            "./diagram/%s_sim_score_histogram_%d.PNG" % (mode, bad_user_id))
             print "%d\t  %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d" % (bad_user_id,
-                                                                                                  l2_topk_bad,
-                                                                                                  l2_lastk_bad,
-                                                                                                  cosine_topk_bad,
-                                                                                                  cosine_lastk_bad,
+                                                                   l2_topk_bad,
+                                                                   l2_topk_good,
+                                                                   (
+                                                                           k - l2_topk_bad - l2_topk_good),
+                                                                   # unlabelled l2_topk
+                                                                   l2_lastk_bad,
+                                                                   l2_lastk_good,
+                                                                   (
+                                                                           k - l2_lastk_bad - l2_lastk_good),
+                                                                   # unlabelled l2_lastk
+                                                                   cosine_topk_bad,
+                                                                   cosine_topk_good,
+                                                                   (
+                                                                           k - cosine_topk_bad - cosine_topk_good),
 
-                                                                                                  (
-                                                                                                          k - l2_topk_bad - l2_topk_good),
-                                                                                                  # unlabelled l2_topk
-                                                                                                  (
-                                                                                                          k - l2_lastk_bad - l2_lastk_good),
-                                                                                                  # unlabelled l2_lastk
-
-                                                                                                  l2_topk_good,
-                                                                                                  l2_lastk_good,
-                                                                                                  cosine_topk_good,
-                                                                                                  cosine_lastk_good,
-
-                                                                                                  (
-                                                                                                          k - cosine_topk_bad - cosine_topk_good),
-                                                                                                  (
-                                                                                                          k - cosine_lastk_bad - cosine_lastk_good)
+                                                                   cosine_lastk_bad,
+                                                                   cosine_lastk_good,
+                                                                   (
+                                                                           k - cosine_lastk_bad - cosine_lastk_good)
                                                                                                   )
             fw.write("%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n" % (bad_user_id,
-                                                                                                       l2_topk_bad,
-                                                                                                       l2_lastk_bad,
-                                                                                                       cosine_topk_bad,
-                                                                                                       cosine_lastk_bad,
+                                                                   l2_topk_bad,
+                                                                   l2_topk_good,
+                                                                   (
+                                                                           k - l2_topk_bad - l2_topk_good),
+                                                                   # unlabelled l2_topk
+                                                                   l2_lastk_bad,
+                                                                   l2_lastk_good,
+                                                                   (
+                                                                           k - l2_lastk_bad - l2_lastk_good),
+                                                                   # unlabelled l2_lastk
+                                                                   cosine_topk_bad,
+                                                                   cosine_topk_good,
+                                                                   (
+                                                                           k - cosine_topk_bad - cosine_topk_good),
 
-                                                                                                       (
-                                                                                                               k - l2_topk_bad - l2_topk_good),
-                                                                                                       # unlabelled l2_topk
-                                                                                                       (
-                                                                                                               k - l2_lastk_bad - l2_lastk_good),
-                                                                                                       # unlabelled l2_lastk
-
-                                                                                                       l2_topk_good,
-                                                                                                       l2_lastk_good,
-                                                                                                       cosine_topk_good,
-                                                                                                       cosine_lastk_good,
-
-                                                                                                       (
-                                                                                                               k - cosine_topk_bad - cosine_topk_good),
-                                                                                                       (
-                                                                                                               k - cosine_lastk_bad - cosine_lastk_good)))
+                                                                   cosine_lastk_bad,
+                                                                   cosine_lastk_good,
+                                                                   (
+                                                                           k - cosine_lastk_bad - cosine_lastk_good)))
     fw.close()
 
 
@@ -182,9 +182,8 @@ gt_good_users = cPickle.load(
 features = ["features", "features_pos_neg", "features_pos_neg_rev2"]
 
 # k = 3
-for k in range(2,11):
+for k in range(2, 11):
     for feature in features:
-
         print "calculate user intersect with ground truth, %d, %s" % (k, feature)
         bad_user_file_path = "./results/%s_%s_%d_gt_bad_users_intersect.csv" % (feature, dataset, k)
         generateIntersect(bad_user_file_path, feature, k, gt_bad_users, gt_good_users, gt_bad_users)
