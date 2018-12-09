@@ -14,10 +14,13 @@ for feature in all_features:
         for n in N:
             intersect = pd.read_csv("./results/%s_%s_%d_gt_%s_users_intersect.csv"%(feature, network, n, gt_user_type), delimiter = ',')
             print intersect.shape
-            mean =  intersect.mean(axis=0)
-            print mean
-            print mean["l2_topk_good"]
+            means = intersect.mean(axis=0)
+            print means
+            m3 = means.iloc[[1,2,4,5,7,8,10,11]]
 
+
+            m3 =  m3/n
+            print m3[0],m3[0],m3[0],m3[0],m3[0],m3[0],m3[0],m3[0]
 
 
             # print intersect[1].sum

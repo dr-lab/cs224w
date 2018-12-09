@@ -266,7 +266,7 @@ def writeCsvEmbedding(feature_label):
         node_id = node[0]
         features = node[1][feature_label]
 
-        fw.write("%d,%s,%s\n" % (len(features), node_id, ",".join(str(e) for e in features)))
+        fw.write("%s,%s\n" % (node_id, ",".join(str(e) for e in features)))
     fw.close()
 
 
