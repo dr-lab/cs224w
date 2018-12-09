@@ -63,39 +63,30 @@ def k_means_clustering(score_map, k):
 def main():
     graph = load_graph()
     score_map = {
-        node_id: node["features"]
+        node_id: node["features"][1:]
         for node_id, node in graph.node.items()
     }
-    k = 3
-    centers, labels = k_means_clustering(score_map, k)
-    print centers
 
     gt_bad_users = cPickle.load(
         open("./results/%s_gt_bad_users_set.pkl" % dataset, "rb"))
 
-    c1 = []
-    c2 = []
-    c0 = []
-    for node_id in labels:
-        if labels[node_id] == 0:
-            c0.append(node_id)
-        if labels[node_id] == 1:
-            c1.append(node_id)
-        if labels[node_id] == 2:
-            c2.append(node_id)
-
-    gt.intersectUsers(c0, gt_bad_users)
-    gt.intersectUsers(c1, gt_bad_users)
-    gt.intersectUsers(c2, gt_bad_users)
-
-    print len(c0)
-    print len(c1)
-    print len(c2)
-
-    for i in range(k):
-        print "Cluster ", i, ": ", [
-            node_id for node_id in labels if labels[node_id] == i
-        ]
+    gt_good_users = cPickle.load(	
+        open("./results/%s_gt_good_users_set.pkl" % dataset, "rb"))	
+    print "Number of ground truth bad users: %d " % len(gt_bad_users)	
+    print "Number of ground truth good users: %d" % len(gt_good_users)	
+    for k in range(2, 10):	
+        print	
+        print "For %d clusters" % k	
+        centers, labels = k_means_clustering(score_map, k)	
+        for i in range(k):	
+            cluster = [node_id for node_id in labels if labels[node_id] == i]	
+            print "Cluster ", i, " has: "	
+            print "%d users" % len(cluster)	
+            bad_users = set(gt_bad_users) & set(cluster)	
+            good_users = set(gt_good_users) & set(cluster)	
+            print "%d ground truth bad users, %.2f%% of the cluster" % (len(bad_users), len(bad_users) / len(cluster) * 100)	
+            print "%d ground truth good users, %.2f%% of the cluster" % (len(	
+                good_users), len(good_users) / len(cluster) * 100)
 
 if __name__ == "__main__":
     main()
