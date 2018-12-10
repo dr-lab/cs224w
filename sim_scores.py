@@ -8,6 +8,8 @@ import networkx_utils as utils
 import cPickle
 import ground_truth_analysis as gt
 import sklearn
+
+
 dataset = "alpha"
 
 
@@ -122,6 +124,7 @@ def generateIntersect(filePath, feature, k, iterrate_users, gt_good_users, gt_ba
                 # utils.hist(sim_score_values_map.values(), 30, 'Sim-Score', 'Frequency',
                 #            '%s Similarity Score Histogram k=3,bad userId= %d' % (mode, bad_user_id),
                 #            "./diagram/%s_sim_score_histogram_%d.PNG" % (mode, bad_user_id))
+
             print "%d\t  %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d" % (
                 bad_user_id,
                 l2_topk_bad,
@@ -168,7 +171,7 @@ gt_good_users = cPickle.load(
 features = ["features", "features_pos_neg", "features_pos_neg_rev2"]
 
 # k = 3
-for k in range(2, 11):
+for k in (5,10,15,20,25,30,35,40,45,50):
     for feature in features:
         print "calculate user intersect with ground truth, %d, %s" % (k, feature)
         bad_user_file_path = "./results/%s_%s_%d_gt_bad_users_intersect.csv" % (feature, dataset, k)
@@ -177,30 +180,6 @@ for k in range(2, 11):
         good_user_file_path = "./results/%s_%s_%d_gt_good_users_intersect.csv" % (feature, dataset, k)
         generateIntersect(good_user_file_path, feature, k, gt_good_users, gt_good_users, gt_bad_users)
 
-
-
-
-
-def generateIntersect(filePath, feature, k, iterrate_users, gt_good_users, gt_bad_users):
-    fw = open(filePath, "w")
-    fw.write(
-        "bad_user_id, "
-        "l2_topk_bad, l2_topk_good, unlabelled_l2_topk,"
-        "l2_lastk_bad, l2_lastk_good, unlabelled_l2_lastk,"
-        "cosine_topk_bad, cosine_topk_good, unlabelled_cosine_topk,"
-        "cosine_lastk_bad, cosine_lastk_good,unlabelled_cosine_lastk"
-        " \n")
-
-    for bad_user_id in iterrate_users:
-        l2_topk = 0
-        cosine_topk = 0
-        l2_lastk = 0
-        cosine_lastk = 0
-
-        if G.has_node(bad_user_id):
-            for mode in ['cosine', 'l2']:
-                sim_score_values_map = calSimAndPrint(G, bad_user_id, mode, feature)
-                topKSet, lastKSet = dumpTopKSimNodes(sim_score_values_map, bad_user_id, k, mode)
                 
                 
                 
@@ -222,7 +201,7 @@ def getScores(G, anchors, mode,feature_set, gt_good_users, gt_bad_users ):
                             score = cosineSim(a_features, features_y)
                             anchor_scores.append(score)
                         elif mode == 'l2':
-                            score = l2NormDistance(base_features, features_y)
+                            score = l2NormDistance(a_features, features_y)
                             anchor_scores.append(score)
                         else:
                             raise ValueError('mode should be cosine or l2')

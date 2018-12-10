@@ -7,6 +7,18 @@ import networkx as nx
 dataset = "alpha"
 
 
+def plotSimScore(X, Y, legends, xlabel, ylabel, title, fileName):
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+
+    plt.title(title)
+    plt.plot(X, Y)
+    plt.legend(legends)
+    # plt.show()
+    plt.savefig(fileName)
+    plt.gcf().clear()
+
+
 def hist(values, bins, xlabel, ylabel, title, fileName):
     n, bins, patches = plt.hist(x=values, bins=bins, color='#0504aa',
                                 alpha=0.7, rwidth=0.85)
