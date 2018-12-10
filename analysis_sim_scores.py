@@ -5,7 +5,7 @@ import numpy as np
 import networkx_utils as utils
 
 network = "alpha"
-all_features = ["features_pos_neg", "features_pos_neg_rev2"]
+all_features = ["features","features_pos_neg", "features_pos_neg_rev2"]
 
 N = [5,10,15,20,25,30,35,40,45,50]
 gt_user_types = ["good","bad"]
@@ -41,7 +41,11 @@ def plot_features():
                 feature_scores[n] = [scores]
 
     # legends = ["L2 Similar %","Cosine Similarity %"]
-    utils.plotSimScore(N, feature_scores.values(), all_features, "How many nodes picked from the sorted similarity score (K)", "% on K of intersected nodes within GT (the higher the better)", "Naive Similarity Score comparison w/wo REV2 features", "./diagram/naive_sim_score_analysis.png")
+    utils.plotSimScore(N, feature_scores.values(), all_features,
+                       "How many nodes picked from the sorted similarity score (K)",
+                       "% on K of intersected nodes within GT (the higher the better)",
+                       "Naive Similarity Score comparison w/wo REV2 features",
+                       "./diagram/naive_sim_score_analysis.png")
     print feature, gt_user_type, scores, N
 
 
@@ -73,7 +77,10 @@ def plot_full():
 
 
             legends = ["L2 Similar %","Cosine Similarity %"]
-            utils.plotSimScore(N, scores, legends, "How many nodes picked from the sorted similarity score (K)", "% on K of intersected nodes within GT (the higher the better)", "Comparison of performance of Cosine vs. L2 %s %s" % (feature, gt_user_type), "./diagram/cosine_l2_comparision_%s_%s.png" % (feature, gt_user_type))
+            utils.plotSimScore(N, scores, legends, "How many nodes picked from the sorted similarity score (K)",
+                               "% on K of intersected nodes within GT (the higher the better)",
+                               "Comparison of performance of Cosine vs. L2 %s %s" % (feature, gt_user_type),
+                               "./diagram/cosine_l2_comparision_%s_%s.png" % (feature, gt_user_type))
             print feature, gt_user_type, scores, N
 
 plot_full()
