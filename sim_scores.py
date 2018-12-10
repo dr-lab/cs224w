@@ -8,8 +8,6 @@ import networkx_utils as utils
 import cPickle
 import ground_truth_analysis as gt
 import sklearn
-
-
 dataset = "alpha"
 
 
@@ -124,7 +122,6 @@ def generateIntersect(filePath, feature, k, iterrate_users, gt_good_users, gt_ba
                 # utils.hist(sim_score_values_map.values(), 30, 'Sim-Score', 'Frequency',
                 #            '%s Similarity Score Histogram k=3,bad userId= %d' % (mode, bad_user_id),
                 #            "./diagram/%s_sim_score_histogram_%d.PNG" % (mode, bad_user_id))
-
             print "%d\t  %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d \t %d" % (
                 bad_user_id,
                 l2_topk_bad,
@@ -180,7 +177,7 @@ for k in (5,10,15,20,25,30,35,40,45,50):
         good_user_file_path = "./results/%s_%s_%d_gt_good_users_intersect.csv" % (feature, dataset, k)
         generateIntersect(good_user_file_path, feature, k, gt_good_users, gt_good_users, gt_bad_users)
 
-                
+
                 
                 
 #code to get percisions               
@@ -239,11 +236,12 @@ def getAvgPrecisionScore(feature_set,mode,num_anchors):
     """
     G = loadGraph()
     
-    #feature_set = features[2]            
+    #feature_set = features[2]
     #mode = modes[0]
     precision_scores = np.zeros((0,1))
-    for i in range(10):
-        anchors = gt_bad_users[10*i:10*i+num_anchors]#np.random.choice(gt_bad_users,10)
+    for i in range(100):
+        print "i %d" % i
+        anchors = np.random.choice(gt_bad_users,10)#gt_bad_users[10*i:10*i+num_anchors]#np.random.choice(gt_bad_users,10)
         Feature_Sim_Node_Score_Map = getScores(G, anchors,mode, feature_set, gt_good_users, gt_bad_users )
         gt_scores = np.zeros((0,2))
         for nid in Feature_Sim_Node_Score_Map.keys():
@@ -253,16 +251,97 @@ def getAvgPrecisionScore(feature_set,mode,num_anchors):
                 gt_scores = np.vstack((gt_scores,[Feature_Sim_Node_Score_Map[nid],0]))
             else:
                 print "boken got un-ided node here"
-        name_score_tuple = collections.namedtuple('sortor', 'name score')
-        reverse_sorted = sorted([name_score_tuple(v, k) for (k, v) in Feature_Sim_Node_Score_Map.items()], reverse=True)
-    
+        #name_score_tuple = collections.namedtuple('sortor', 'name score')
+        #reverse_sorted = sorted([name_score_tuple(v, k) for (k, v) in Feature_Sim_Node_Score_Map.items()], reverse=True)
+
         precision = sklearn.metrics.average_precision_score( gt_scores[:,1],  gt_scores[:,0], pos_label=1)
         precision_scores = np.append(precision_scores,precision)
     return np.mean(precision_scores)
 
-num_anchors = 20
-p = getAvgPrecisionScore(features[1],modes[1],num_anchors)
-print p 
+def getAvgAucScore(feature_set,mode,num_anchors):
+    #anchors = gt_bad_users[0:10]
+    #feature_set = features[2]
+    #mode = modes[0]
+    """Feature_Sim_Node_Score_Map = getScores(G, anchors,mode, feature_set, gt_good_users, gt_bad_users )
+    gt_scores = np.zeros((0,2))
+    for nid in Feature_Sim_Node_Score_Map.keys():
+        if nid in gt_good_users:
+            gt_scores = np.vstack((gt_scores,[Feature_Sim_Node_Score_Map[nid],1]))
+        elif nid in gt_bad_users:
+            gt_scores = np.vstack((gt_scores,[Feature_Sim_Node_Score_Map[nid],0]))
+        else:
+            print "boken got unided node here"
+    """
+    G = loadGraph()
+
+    #feature_set = features[2]
+    #mode = modes[0]
+    precision_scores = np.zeros((0,1))
+    for i in range(10):
+        print "i %d" % i
+        anchors = np.random.choice(gt_bad_users,10)#gt_bad_users[10*i:10*i+num_anchors]#np.random.choice(gt_bad_users,10)
+        Feature_Sim_Node_Score_Map = getScores(G, anchors,mode, feature_set, gt_good_users, gt_bad_users )
+        gt_scores = np.zeros((0,2))
+        for nid in Feature_Sim_Node_Score_Map.keys():
+            if nid in gt_good_users:
+                gt_scores = np.vstack((gt_scores,[Feature_Sim_Node_Score_Map[nid],1]))
+            elif nid in gt_bad_users:
+                gt_scores = np.vstack((gt_scores,[Feature_Sim_Node_Score_Map[nid],0]))
+            else:
+                print "boken got un-ided node here"
+        #name_score_tuple = collections.namedtuple('sortor', 'name score')
+        #reverse_sorted = sorted([name_score_tuple(v, k) for (k, v) in Feature_Sim_Node_Score_Map.items()], reverse=True)
+    
+        precision = sklearn.metrics.roc_auc_score( gt_scores[:,1],  gt_scores[:,0])
+        precision_scores = np.append(precision_scores,precision)
+    return np.mean(precision_scores)
+
+def getAllAvgPrecisionScore():
+    anchors = np.linspace(10,90,5)
+    features = ["features", "features_pos_neg", "features_pos_neg_rev2"]
+    modes = ['cosine', 'l2']
+
+    for mode in modes:
+        for feature in features:
+            ps =  np.zeros((0,1))
+            for num_anchors in anchors:
+                l = "%s, %s " % (mode,feature)
+                p = getAvgPrecisionScore(feature,mode,num_anchors)
+                ps = np.append(ps,p)
+            plt.plot(anchors,ps, label = l)
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.25),
+          ncol=3, fancybox=True, shadow=True)
+    plt.xlabel("Number of Anchor Nodes")
+    plt.ylabel("Average Precision")
+    #plt.show()
+    plt.savefig("./results/sim_score_results.png", bbox_inches = "tight")
+
+getAllAvgPrecisionScore()
+
+
+
+def getAllAvgAucScore():
+    anchors = np.linspace(10,50,5)
+    features = ["features", "features_pos_neg", "features_pos_neg_rev2"]
+    modes = ['cosine', 'l2']
+
+    for mode in modes:
+        for feature in features:
+            ps =  np.zeros((0,1))
+            for num_anchors in anchors:
+                l = "%s, %s " % (mode,feature)
+                p = getAvgAucScore(feature,mode,num_anchors)
+                ps = np.append(ps,p)
+            plt.plot(anchors,ps, label = l)
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.25),
+          ncol=3, fancybox=True, shadow=True)
+    plt.xlabel("Number of Anchor Nodes")
+    plt.ylabel("Average AUC")
+    plt.show()
+
+#getAllAvgAucScore()
+
+
 """gt_scores_good = gt_scores[np.where(gt_scores[:,1] > 0),:]
 gt_scores_bad =  gt_scores[np.where(gt_scores[:,1] == 0),:]
 kf = sklearn.model_selection.KFold(n_splits=10, random_state=None, shuffle=False)
